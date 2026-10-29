@@ -87,6 +87,7 @@ def main():
 
         total_min = len(res_filled)
         missing_min = int(res_filled["WM"].isna().sum())
+        avail_min = total_min - missing_min
         off_min = int((res_filled["WM"].fillna(0) <= ON_THRESHOLD_W).sum())
         cycles = detect_cycles(res_filled["WM"])
         cycles["house"] = h
@@ -103,7 +104,11 @@ def main():
                 "missing_pct": round(missing_min / total_min * 100, 2),
                 "off_pct": round(off_min / total_min * 100, 2),
                 "n_cycles_detected": len(cycles),
-                "cycles_per_week": round(len(cycles) / (total_min / 1440 / 7), 2),
+                # normalised by AVAILABLE (non-missing) days, not calendar days -
+                # otherwise a house with more missing WM data looks artificially
+                # under-used relative to a house with better sensor coverage
+                "available_days": round(avail_min / 1440, 1),
+                "cycles_per_week": round(len(cycles) / (avail_min / 1440 / 7), 2),
             }
         )
         print(f"house {h}: {len(cycles)} cycles, {total_min} bins, missing {missing_min/total_min*100:.2f}%")

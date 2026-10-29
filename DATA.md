@@ -88,16 +88,22 @@ dataset documentation's own recommendation that such rows "should be discarded."
 the same 1-minute resampling and ≤3-minute short-gap interpolation described above, for
 methodological consistency with Part 1.
 
-| House | WM channel | Coverage start | Coverage end | Days | Missing % | Off-time % | Cycles detected | Cycles/week |
-|---|---|---|---|---|---|---|---|---|
-| 1 | 5 | 2013-10-09 | 2015-07-10 | 639.0 | 12.68% | 98.29% | 411 | 4.50 |
-| 2 | 2 | 2013-09-17 | 2015-05-28 | 617.4 | 24.47% | 96.24% | 339 | 3.84 |
-| 5 | 3 | 2013-09-26 | 2015-07-06 | 648.3 | 11.71% | 93.36% | 949 | 10.25 |
-| 6 | 2 | 2013-11-28 | 2015-06-28 | 577.4 | 14.97% | 98.40% | 139 | 1.69 |
-| 7 | 5 | 2013-11-01 | 2015-07-08 | 613.2 | 12.71% | 92.70% | 859 | 9.81 |
-| 10 | 5 | 2013-11-20 | 2015-06-30 | 587.0 | 10.65% | 92.04% | 678 | 8.09 |
-| 19 | 2 | 2014-03-06 | 2015-06-20 | 470.5 | 6.39% | 96.36% | 270 | 4.02 |
-| 20 | 4 | 2014-03-20 | 2015-06-23 | 460.3 | 5.97% | 97.62% | 198 | 3.01 |
+| House | WM channel | Coverage start | Coverage end | Days | Available days | Missing % | Off-time % | Cycles detected | Cycles/week |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 5 | 2013-10-09 | 2015-07-10 | 639.0 | 557.9 | 12.68% | 98.29% | 411 | 5.16 |
+| 2 | 2 | 2013-09-17 | 2015-05-28 | 617.4 | 466.3 | 24.47% | 96.24% | 339 | 5.09 |
+| 5 | 3 | 2013-09-26 | 2015-07-06 | 648.3 | 572.4 | 11.71% | 93.36% | 949 | 11.61 |
+| 6 | 2 | 2013-11-28 | 2015-06-28 | 577.4 | 491.0 | 14.97% | 98.40% | 139 | 1.98 |
+| 7 | 5 | 2013-11-01 | 2015-07-08 | 613.2 | 535.2 | 12.71% | 92.70% | 859 | 11.23 |
+| 10 | 5 | 2013-11-20 | 2015-06-30 | 587.0 | 524.5 | 10.65% | 92.04% | 678 | 9.05 |
+| 19 | 2 | 2014-03-06 | 2015-06-20 | 470.5 | 440.4 | 6.39% | 96.36% | 270 | 4.29 |
+| 20 | 4 | 2014-03-20 | 2015-06-23 | 460.3 | 432.8 | 5.97% | 97.62% | 198 | 3.20 |
+
+**Cycles/week is normalised by available (non-missing) days, not calendar days** — a house with
+more missing washing-machine data would otherwise look artificially under-used relative to a
+house with better sensor coverage purely as a measurement artefact, not a real usage difference
+(e.g. House 2, the highest-missing house at 24.47%, moves from 3.84/week under a naive
+calendar-day normalisation to 5.09/week once missing time is excluded from the denominator).
 
 (Full table: `data/processed/wm_availability.csv`; per-cycle table: `data/processed/wm_cycles.csv`.)
 

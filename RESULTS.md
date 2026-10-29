@@ -13,11 +13,13 @@ last **at least 5 minutes** in total (on + internal pauses) to filter out noise 
 `src/washing_machine_eda.py:detect_cycles`.
 
 Availability, missingness and cycle counts per house are in `DATA.md`'s table (source:
-`data/processed/wm_availability.csv`). Two things stand out: **House 2** has the highest missing
-rate (24.47%), and **House 5** has an unusually high cycle rate (10.25/week, ~1.5/day) — plausibly
-genuine (4-occupant household) but also a reminder that a fixed 10 W/10 min/5 min rule is a
-simplification; a slightly noisier channel or a second nearby appliance briefly tripping the
-threshold would inflate this count too.
+`data/processed/wm_availability.csv`; cycles/week there is normalised by **available**, non-missing
+days, not calendar days, so it stays comparable across houses with very different missing
+rates). Two things stand out: **House 2** has the highest missing rate (24.47%), and **House 5**
+has an unusually high cycle rate (11.61/week, ~1.7/day) — plausibly genuine (4-occupant
+household) but also a reminder that a fixed 10 W/10 min/5 min rule is a simplification; a
+slightly noisier channel or a second nearby appliance briefly tripping the threshold would
+inflate this count too.
 
 ### Required plots
 
