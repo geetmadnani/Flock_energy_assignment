@@ -92,10 +92,13 @@ for a narrated read-through.
 
 - Gradient boosting (LightGBM) over a deep sequence model (e.g. Seq2Point): faster to train,
   iterate and explain within the assignment's time-box, at the cost of not learning convolutional
-  appliance-signature shapes the way a CNN-based NILM model would. Given the household-split
-  result (model doesn't beat "always off" on unseen homes), a heavier architecture alone likely
-  would not fix the core issue — it's a data-diversity problem (4 training houses, 4 distinct
-  washing-machine makes/models), not a model-capacity problem.
+  appliance-signature shapes the way a CNN-based NILM model would. **This trade-off matters more
+  than initially assumed**: published work (Murray et al. 2019, cited in `RESULTS.md`) achieves
+  F1 = 0.79–0.86 doing the same unseen-REFIT-house washing-machine test we ran, using a
+  windowed CNN/GRU plus a class-balanced evaluation protocol. So the gap to our F1 = 0.001 isn't
+  purely a data-diversity limit — architecture (window-based shape recognition vs. our rolling
+  tabular features) and evaluation protocol (balanced windows vs. our realistic 92–98%-off
+  timeline) both contribute, per the literature comparison in `RESULTS.md`.
 - Used 8 of 20 households (those with a dedicated, unambiguous washing-machine channel) rather
   than all 20, to keep runtime and reasoning manageable within the assignment's scope while still
   giving 4 training + 1 validation + 3 fully-held-out test households.
@@ -107,5 +110,8 @@ for a narrated read-through.
 - A proper Seq2Point/CNN baseline trained across the full 20 REFIT households (more appliance
   diversity) to see whether cross-house transfer improves with more varied training data, isolating
   whether the failure above is a data-diversity limit or a genuine architecture limit.
+- Re-run Experiment A's evaluation under a class-balanced windowed protocol matching Murray et
+  al. (2019) (see `RESULTS.md`), to isolate how much of our F1 gap vs. their published 0.79–0.86
+  is architecture vs. evaluation-protocol difficulty.
 - Address the 2.78% of House 1 rows where `sum(appliances) > aggregate` by re-deriving the
   official appliance-channel re-matching logic, instead of only flagging them.

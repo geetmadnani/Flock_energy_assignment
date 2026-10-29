@@ -115,6 +115,48 @@ exactly what the Part 2 cross-house comparison plot shows directly in the raw ap
 (peak power ranging ~350 W–2,400 W across houses) — the model is being asked to recognise a
 signature shape it has never seen.
 
+### Comparison against published research
+
+Per the assignment's research guidance, we checked our Experiment A result against peer-reviewed
+work doing the same experiment: **Murray, D., Stankovic, L., Stankovic, V., Lulic, S., &
+Sladojevic, S. (2019). "Transferability of Neural Network Approaches for Low-rate Energy
+Disaggregation." ICASSP 2019, pp. 8330–8334.** Their Table 4 trains CNN/GRU networks on
+REFIT houses {3, 10, 11, 17} and tests on a fully unseen REFIT House 2 for washing machine —
+the same household-split design as our Experiment A, on the same dataset and overlapping
+houses (our test set includes House 10; their training set does too). They report **F1 = 0.79
+(CNN) / 0.86 (GRU), MAE = 72–79 W** on the unseen house — starkly better than our F1 = 0.001.
+
+This gap is real and worth understanding rather than glossing over, because it changes the
+conclusion from "cross-house NILM is fundamentally impossible" to something narrower and more
+accurate. Two methodological differences explain most of it:
+
+1. **Their train and test data are both balanced 50/50 on-state vs off-state at the window
+   level** ("Input data was balanced... Limiting the majority class... resulted in a 50/50
+   split," applied to test data too, explicitly "to avoid artificially improving scores... by
+   balancing the test data"). Our test houses are naturally **92–98% off-time** (see
+   `wm_availability.csv`'s `off_pct` column) — a model is scored on finding rare activations in
+   a realistic, heavily imbalanced stream, not discriminating between two pre-selected,
+   equally-likely 40-minute windows. Balancing the *test* set changes what F1 is measuring:
+   it's no longer "does this flag correctly over a full imbalanced timeline," it's "given a
+   window already known to be 50% likely active, can the model tell which." These are different
+   and not directly comparable difficulty levels.
+2. **Their models classify a fixed appliance-sized window (300 samples ≈ 40 minutes) as a
+   whole**, a formulation tailored to recognise one full activation shape, versus our dense
+   per-minute regression over a continuous, naturally-imbalanced timeline. A CNN/GRU reading a
+   pre-segmented 40-minute window is doing a fundamentally easier task than flagging the right
+   individual minutes out of a full, mostly-off month.
+
+**What this means for our conclusion**: the literature confirms cross-house transfer for REFIT
+washing machines is achievable — but with an architecture built to recognise activation shapes
+from windowed input, and an evaluation protocol that doesn't score the model against the full,
+realistic class imbalance. Our simpler tabular/gradient-boosting approach, evaluated on the
+full, naturally-imbalanced timeline, does not achieve this — which is itself a meaningful,
+literature-grounded finding: **a straightforward feature-engineering + gradient-boosting
+approach is not sufficient for cross-house NILM transfer; the architecture and evaluation
+protocol both matter**, not just more/better-engineered features. A natural next step (noted in
+`README.md`) would be re-evaluating under a comparable balanced-window protocol to isolate how
+much of the remaining gap is architecture versus evaluation design.
+
 ### Feature importance (top 5, by gain — `data/processed/feature_importance.csv`)
 
 1. `agg_roll_min_60` — the minimum aggregate value over the last 60 minutes
