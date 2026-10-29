@@ -208,7 +208,7 @@ def main():
     fig.savefig(f"{FIG_DIR}/wm_usage_patterns.png", dpi=130)
     plt.close(fig)
 
-    print("\nSaved availability/cycles tables and 5 figures to figures/.")
+    print("\nSaved availability/cycles tables and 4 figures to figures/.")
 
 
 if __name__ == "__main__":
