@@ -57,13 +57,14 @@ was used.
    - Any `ApplianceN` outside [0, 4,000] W → `NaN` (12–371 rows per channel, <0.01% each). This reuses the **same 4,000 W threshold the official REFIT cleaning pipeline uses** for IAM spike removal — a defensible, precedented choice rather than a guess.
    - Rows where `sum(appliances) > aggregate` are **flagged and counted, not corrected** — this mirrors the official `Issues` column's logic, but we do not attempt the official pipeline's appliance-channel re-matching, which is out of scope for this task.
 4. **Resample to 1-minute bins** (mean of all readings falling in each minute).
-5. **Fill short gaps**: a run of fully-missing 1-minute bins up to **3 minutes** long is linearly time-interpolated. This covers routine polling hiccups without inventing data across a real outage.
-6. **Flag longer outages, do not fill them**: any remaining run of missing bins is left as `NaN` and logged to `data/processed/house1_outages.csv`. House 1 has **75 such outages totalling 53,259 minutes (~9.8% of the 543,720 resampled 1-minute bins)**; the five largest are multi-day network/hardware outages (the largest: 2015-05-10 23:37 → 2015-05-19 15:09, ~8.65 days), consistent with REFIT's own documented outage periods.
+5. **Fill short gaps, per channel**: a run of missing 1-minute bins up to **3 minutes** long is linearly time-interpolated, **computed independently for each column** rather than only where an entire row is missing. This matters because REFIT's dominant data-quality issue is exactly that: IAMs drop out independently of the aggregate meter and of each other (one appliance's plug monitor can go dark for hours while every other channel keeps reporting fine) — a row-wise missingness check would hide this entirely, since a row with 9 good columns and 1 `NaN` column still looks "fine" if you only check whether the *whole* row is empty.
+6. **Flag longer outages per channel, do not fill them**: any remaining run of missing bins, computed per column, is left as `NaN` and logged to `data/processed/house1_outages.csv` (one row per channel-outage). Across all 10 channels there are **3,437 such outage runs totalling 770,272 channel-minutes**; per-channel missingness after gap-filling ranges from **9.76% (`Aggregate`) to 49.56% (`Appliance9`)** — see `data/processed/house1_per_channel_missingness.csv`. Most channels share the same handful of multi-day network/hardware outages (e.g. 2015-05-10 23:40 → 2015-05-19 15:09, ~8.65 days, present in 8 of 10 columns simultaneously), but `Appliance9` additionally has its own **~10-day outage invisible to the others** (2014-11-10 13:19 → 2014-11-20 15:26) — concrete evidence of channels failing independently, not just together.
 
 ### Outputs
 
 - `data/processed/house1_clean_1min.parquet` — cleaned, 1-minute Aggregate + 9 appliance channels (with NaN gaps preserved for genuine outages)
-- `data/processed/house1_outages.csv` — outage log (start, end, duration)
+- `data/processed/house1_outages.csv` — per-channel outage log (column, start, end, duration)
+- `data/processed/house1_per_channel_missingness.csv` — % missing per channel after gap-filling
 - `data/processed/house1_cleaning_summary.json` — all counts above, machine-readable
 - `figures/house1_overview_before_after.png` — full-period daily-mean, before vs after
 - `figures/house1_day_before_after.png` — one representative day (2014-12-12, 3 wash cycles visible) at 1-minute resolution, before vs after; the fridge trace shows a clear impossible ~7,600 W spike removed by cleaning
@@ -89,14 +90,14 @@ methodological consistency with Part 1.
 
 | House | WM channel | Coverage start | Coverage end | Days | Missing % | Off-time % | Cycles detected | Cycles/week |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 5 | 2013-10-09 | 2015-07-10 | 639.0 | 12.91% | 98.31% | 414 | 4.54 |
-| 2 | 2 | 2013-09-17 | 2015-05-28 | 617.4 | 24.65% | 96.25% | 345 | 3.91 |
-| 5 | 3 | 2013-09-26 | 2015-07-06 | 648.3 | 12.69% | 93.46% | 966 | 10.43 |
-| 6 | 2 | 2013-11-28 | 2015-06-28 | 577.4 | 15.03% | 98.40% | 140 | 1.70 |
-| 7 | 5 | 2013-11-01 | 2015-07-08 | 613.2 | 13.14% | 92.77% | 881 | 10.06 |
-| 10 | 5 | 2013-11-20 | 2015-06-30 | 587.0 | 11.00% | 92.08% | 669 | 7.98 |
-| 19 | 2 | 2014-03-06 | 2015-06-20 | 470.5 | 6.53% | 96.36% | 271 | 4.03 |
-| 20 | 4 | 2014-03-20 | 2015-06-23 | 460.3 | 6.01% | 97.62% | 198 | 3.01 |
+| 1 | 5 | 2013-10-09 | 2015-07-10 | 639.0 | 12.68% | 98.29% | 411 | 4.50 |
+| 2 | 2 | 2013-09-17 | 2015-05-28 | 617.4 | 24.47% | 96.24% | 339 | 3.84 |
+| 5 | 3 | 2013-09-26 | 2015-07-06 | 648.3 | 11.71% | 93.36% | 949 | 10.25 |
+| 6 | 2 | 2013-11-28 | 2015-06-28 | 577.4 | 14.97% | 98.40% | 139 | 1.69 |
+| 7 | 5 | 2013-11-01 | 2015-07-08 | 613.2 | 12.71% | 92.70% | 859 | 9.81 |
+| 10 | 5 | 2013-11-20 | 2015-06-30 | 587.0 | 10.65% | 92.04% | 678 | 8.09 |
+| 19 | 2 | 2014-03-06 | 2015-06-20 | 470.5 | 6.39% | 96.36% | 270 | 4.02 |
+| 20 | 4 | 2014-03-20 | 2015-06-23 | 460.3 | 5.97% | 97.62% | 198 | 3.01 |
 
 (Full table: `data/processed/wm_availability.csv`; per-cycle table: `data/processed/wm_cycles.csv`.)
 

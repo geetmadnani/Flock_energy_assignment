@@ -14,7 +14,7 @@ last **at least 5 minutes** in total (on + internal pauses) to filter out noise 
 
 Availability, missingness and cycle counts per house are in `DATA.md`'s table (source:
 `data/processed/wm_availability.csv`). Two things stand out: **House 2** has the highest missing
-rate (24.65%), and **House 5** has an unusually high cycle rate (10.4/week, ~1.5/day) — plausibly
+rate (24.47%), and **House 5** has an unusually high cycle rate (10.25/week, ~1.5/day) — plausibly
 genuine (4-occupant household) but also a reminder that a fixed 10 W/10 min/5 min rule is a
 simplification; a slightly noisier channel or a second nearby appliance briefly tripping the
 threshold would inflate this count too.
@@ -74,16 +74,17 @@ overlapping time windows — but also no exposure to those specific appliances d
 
 | Model | MAE (W) | RMSE (W) | SAE | On/off F1 | Precision | Recall |
 |---|---|---|---|---|---|---|
-| Always-off baseline | 16.10 | 148.44 | 1.000 | 0.000 | 0.000 | 0.000 |
-| Hourly-profile baseline | 28.74 | 147.53 | 0.102 | 0.119 | 0.065 | 0.663 |
-| **LightGBM** | **16.12** | **148.40** | **0.998** | **0.001** | 0.159 | 0.001 |
+| Always-off baseline | 16.14 | 148.60 | 1.000 | 0.000 | 0.000 | 0.000 |
+| Hourly-profile baseline | 28.92 | 147.68 | 0.094 | 0.119 | 0.066 | 0.663 |
+| **LightGBM** | **16.15** | **148.59** | **0.999** | **0.000** | 0.000 | 0.000 |
 
-**The model does not beat the always-off baseline on unseen households** — it effectively
-collapsed to predicting near-zero (early stopping triggered at boosting round 4). Per-house
-breakdown (`data/processed/model_results.csv`) shows it is worst on House 10 (F1 0.0002) and
-best, though still poor, on House 20 (F1 0.006). `figures/model_actual_vs_predicted_house10.png`
-makes this visible directly: real 2,000 W+ wash cycles are completely missed by a flat
-near-zero prediction line.
+**The model does not beat the always-off baseline on unseen households** — it collapsed
+completely to predicting near-zero (early stopping triggered at boosting round 1 of 500: the
+validation loss never improved past the very first tree). Per-house breakdown
+(`data/processed/model_results.csv`) shows **F1 = 0.000 on every one of the three held-out test
+houses (10, 19, 20)** — it never flags a single active minute correctly in any of them.
+`figures/model_actual_vs_predicted_house10.png` makes this visible directly: real 2,000 W+ wash
+cycles are completely missed by a flat near-zero prediction line.
 
 ### Experiment B — time-based split within known households (contrast case)
 
@@ -95,13 +96,13 @@ later time period").
 
 | Model | MAE (W) | RMSE (W) | SAE | On/off F1 | Precision | Recall |
 |---|---|---|---|---|---|---|
-| Always-off baseline | 20.03 | 170.44 | 1.000 | 0.000 | 0.000 | 0.000 |
-| Hourly-profile baseline | 34.25 | 168.86 | 0.162 | 0.132 | 0.072 | 0.790 |
-| **LightGBM** | **19.63** | **166.53** | **0.932** | **0.444** | **0.661** | **0.334** |
+| Always-off baseline | 20.13 | 170.82 | 1.000 | 0.000 | 0.000 | 0.000 |
+| Hourly-profile baseline | 34.48 | 169.24 | 0.159 | 0.132 | 0.072 | 0.789 |
+| **LightGBM** | **19.57** | **164.06** | **0.908** | **0.447** | **0.646** | **0.342** |
 
-Here the model clearly beats both baselines on F1 (0.44 vs 0.13 vs 0.00) and precision (0.66),
-though recall is still only 0.33 — it misses roughly two-thirds of active washing-machine
-minutes, and SAE of 0.93 means it still substantially under-estimates total washing energy, even
+Here the model clearly beats both baselines on F1 (0.45 vs 0.13 vs 0.00) and precision (0.65),
+though recall is still only 0.34 — it misses roughly two-thirds of active washing-machine
+minutes, and SAE of 0.91 means it still substantially under-estimates total washing energy, even
 on households it has effectively seen before. `figures/model_actual_vs_predicted_timesplit_house1.png`
 shows this concretely: the model picks up roughly when a cycle started, but predicts only
 ~100–400 W against an actual ~2,000–2,400 W peak.
@@ -124,7 +125,7 @@ Disaggregation." ICASSP 2019, pp. 8330–8334.** Their Table 4 trains CNN/GRU ne
 REFIT houses {3, 10, 11, 17} and tests on a fully unseen REFIT House 2 for washing machine —
 the same household-split design as our Experiment A, on the same dataset and overlapping
 houses (our test set includes House 10; their training set does too). They report **F1 = 0.79
-(CNN) / 0.86 (GRU), MAE = 72–79 W** on the unseen house — starkly better than our F1 = 0.001.
+(CNN) / 0.86 (GRU), MAE = 72–79 W** on the unseen house — starkly better than our F1 = 0.000.
 
 This gap is real and worth understanding rather than glossing over, because it changes the
 conclusion from "cross-house NILM is fundamentally impossible" to something narrower and more
@@ -161,9 +162,9 @@ much of the remaining gap is architecture versus evaluation design.
 
 1. `agg_roll_min_60` — the minimum aggregate value over the last 60 minutes
 2. `agg_roll_mean_60`
-3. `agg_roll_min_30`
-4. `agg_roll_max_60`
-5. `hour_sin`
+3. `hour_cos`
+4. `dow_sin`
+5. `agg_roll_std_60`
 
 The model leans heavily on **long (60-min) rolling statistics and time-of-day**, essentially
 answering "has the household's baseline load been unusually low/stable, and is it a

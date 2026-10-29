@@ -1,5 +1,5 @@
 label,MAE_W,RMSE_W,SAE,on_off_F1,on_off_precision,on_off_recall,n_rows
-timesplit_baseline_always_off,20.03,170.44,1.0,0.0,0.0,0.0,865266
-timesplit_baseline_hourly_profile,34.25,168.86,0.1623,0.1322,0.0721,0.7905,865266
-timesplit_lightgbm_model,19.63,166.53,0.9315,0.4441,0.6613,0.3343,865266
-timesplit_lightgbm_active_only,335.54,697.36,0.9549,0.5011,1.0,0.3343,49312
+timesplit_baseline_always_off,20.13,170.82,1.0,0.0,0.0,0.0,868444
+timesplit_baseline_hourly_profile,34.48,169.24,0.1589,0.1324,0.0723,0.7893,868444
+timesplit_lightgbm_model,19.57,164.06,0.9075,0.4471,0.6459,0.3419,868444
+timesplit_lightgbm_active_only,330.97,685.68,0.9379,0.5096,1.0,0.3419,49645

@@ -11,8 +11,8 @@
     19,
     20
   ],
-  "n_train": 2992921,
-  "n_val": 766970,
-  "n_test": 2008529,
-  "best_iteration": 4
+  "n_train": 3006175,
+  "n_val": 770726,
+  "n_test": 2012705,
+  "best_iteration": 1
 }

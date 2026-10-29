@@ -18,7 +18,7 @@ REFIT households.
 
 **Not yet suitable**:
 - **Zero-shot deployment of one model across arbitrary new households.** Experiment A (fully
-  held-out households) shows the model fails to beat an "always off" baseline (F1 0.001) — it
+  held-out households) shows the model fails to beat an "always off" baseline (F1 0.000) — it
   does not transfer a learned appliance signature across different washing-machine makes/models.
   This should not be sold or deployed as a universal, instantly-generalising disaggregation
   product without per-home calibration data or a materially different modelling approach

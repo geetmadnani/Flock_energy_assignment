@@ -21,18 +21,42 @@
   "rows_sum_appliances_gt_aggregate_pct": 2.782,
   "resampled_1min_bins_total": 543720,
   "resampled_1min_bins_fully_missing_before_fill": 53769,
-  "remaining_outage_count": 75,
-  "remaining_outage_total_minutes": 53259,
+  "remaining_outage_count": 3437,
+  "remaining_outage_total_minutes": 770272,
   "largest_outages_minutes": [
-    12453,
-    10819,
-    6511,
-    6274,
-    3307,
-    2999,
-    2260,
-    2163,
-    1813,
-    1448
-  ]
+    14528,
+    12641,
+    12450,
+    12450,
+    12450,
+    12450,
+    12450,
+    12450,
+    12450,
+    12450
+  ],
+  "remaining_outage_minutes_by_column": {
+    "Aggregate": 53075,
+    "Appliance1": 54910,
+    "Appliance2": 54944,
+    "Appliance3": 54446,
+    "Appliance4": 62753,
+    "Appliance5": 59507,
+    "Appliance6": 53986,
+    "Appliance7": 53080,
+    "Appliance8": 54112,
+    "Appliance9": 269459
+  },
+  "pct_missing_by_column": {
+    "Aggregate": 9.761,
+    "Appliance1": 10.099,
+    "Appliance2": 10.105,
+    "Appliance3": 10.014,
+    "Appliance4": 11.541,
+    "Appliance5": 10.944,
+    "Appliance6": 9.929,
+    "Appliance7": 9.762,
+    "Appliance8": 9.952,
+    "Appliance9": 49.558
+  }
 }

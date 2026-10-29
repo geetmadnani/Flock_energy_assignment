@@ -65,32 +65,48 @@ def resample_1min(df, time_col="Time", agg="mean"):
 
 
 def fill_short_gaps(df, max_gap_minutes=3):
-    """Linearly interpolate runs of missing 1-min bins up to max_gap_minutes long.
-    Longer runs are left as NaN (flagged as outages elsewhere) rather than filled.
+    """Linearly interpolate runs of missing 1-min bins up to max_gap_minutes long,
+    per column. REFIT's IAMs can drop out independently of each other and of the
+    aggregate meter (one appliance channel can go dark for hours while every
+    other column keeps reporting), so gaps are filled column-by-column rather
+    than only where every column is NaN at once. Longer runs are left as NaN
+    (flagged as outages elsewhere) rather than filled.
     """
     filled = df.copy()
-    is_na = filled.isna().all(axis=1)
-    # identify runs of consecutive all-NaN rows
-    run_id = (is_na != is_na.shift()).cumsum()
-    run_lengths = is_na.groupby(run_id).transform("sum")
-    short_gap_mask = is_na & (run_lengths <= max_gap_minutes)
-    interpolated = filled.interpolate(method="time", limit_area="inside")
-    filled.loc[short_gap_mask] = interpolated.loc[short_gap_mask]
+    for col in filled.columns:
+        filled[col] = filled[col].interpolate(
+            method="time", limit_area="inside", limit=max_gap_minutes
+        )
     return filled
 
 
 def outage_table(df):
-    """Return start/end/duration of remaining (unfilled, longer) gaps."""
-    is_na = df.isna().all(axis=1)
-    run_id = (is_na != is_na.shift()).cumsum()
+    """Return start/end/duration of remaining (unfilled, longer) gaps, per column.
+    Computed independently per column for the same reason fill_short_gaps is:
+    a column can be missing while the rest of the row is fine.
+    """
     gaps = []
-    for rid, grp in df.groupby(run_id):
-        if is_na.loc[grp.index].iloc[0]:
-            gaps.append(
-                {
-                    "start": grp.index[0],
-                    "end": grp.index[-1],
-                    "duration_min": len(grp),
-                }
-            )
-    return pd.DataFrame(gaps)
+    for col in df.columns:
+        is_na = df[col].isna()
+        if not is_na.any():
+            continue
+        run_id = (is_na != is_na.shift()).cumsum()
+        for _, grp in is_na.groupby(run_id):
+            if grp.iloc[0]:
+                gaps.append(
+                    {
+                        "column": col,
+                        "start": grp.index[0],
+                        "end": grp.index[-1],
+                        "duration_min": len(grp),
+                    }
+                )
+    return pd.DataFrame(gaps, columns=["column", "start", "end", "duration_min"])
+
+
+def per_column_missingness(df):
+    """% of rows NaN per column (after gap-filling) - surfaces channels that go
+    missing independently of the rest, which a row-wise missingness check would
+    hide (a row with 8 good columns and 1 NaN column is still "missing")."""
+    pct = (df.isna().mean() * 100).round(3)
+    return pct.rename("pct_missing").rename_axis("column").reset_index()

@@ -95,7 +95,7 @@ for a narrated read-through.
   appliance-signature shapes the way a CNN-based NILM model would. **This trade-off matters more
   than initially assumed**: published work (Murray et al. 2019, cited in `RESULTS.md`) achieves
   F1 = 0.79–0.86 doing the same unseen-REFIT-house washing-machine test we ran, using a
-  windowed CNN/GRU plus a class-balanced evaluation protocol. So the gap to our F1 = 0.001 isn't
+  windowed CNN/GRU plus a class-balanced evaluation protocol. So the gap to our F1 = 0.000 isn't
   purely a data-diversity limit — architecture (window-based shape recognition vs. our rolling
   tabular features) and evaluation protocol (balanced windows vs. our realistic 92–98%-off
   timeline) both contribute, per the literature comparison in `RESULTS.md`.

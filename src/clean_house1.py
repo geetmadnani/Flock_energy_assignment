@@ -45,6 +45,7 @@ from data_utils import (  # noqa: E402
     resample_1min,
     fill_short_gaps,
     outage_table,
+    per_column_missingness,
 )
 
 RAW_PATH = f"{_ROOT}/data/raw_extract/RAW_House1_Part2.csv"
@@ -107,13 +108,23 @@ def main():
     summary["resampled_1min_bins_total"] = len(res_after)
     summary["resampled_1min_bins_fully_missing_before_fill"] = n_missing_bins_before_fill
 
-    # 5. fill short gaps, leave longer outages as NaN
+    # 5. fill short gaps per-column, leave longer per-column outages as NaN
+    # (appliance channels and Aggregate can go missing independently of each
+    # other - see fill_short_gaps/outage_table docstrings - so gaps are
+    # computed and filled per column, not only where a whole row is missing)
     res_filled = fill_short_gaps(res_after, max_gap_minutes=SHORT_GAP_MAX_MIN)
     gaps = outage_table(res_filled)
     gaps = gaps.sort_values("duration_min", ascending=False)
     summary["remaining_outage_count"] = len(gaps)
     summary["remaining_outage_total_minutes"] = int(gaps["duration_min"].sum()) if len(gaps) else 0
     summary["largest_outages_minutes"] = gaps["duration_min"].head(10).tolist()
+    summary["remaining_outage_minutes_by_column"] = (
+        gaps.groupby("column")["duration_min"].sum().astype(int).to_dict() if len(gaps) else {}
+    )
+
+    missingness = per_column_missingness(res_filled)
+    missingness.to_csv(f"{OUT_DIR}/house1_per_channel_missingness.csv", index=False)
+    summary["pct_missing_by_column"] = dict(zip(missingness["column"], missingness["pct_missing"]))
 
     gaps.to_csv(f"{OUT_DIR}/house1_outages.csv", index=False)
     res_filled.to_parquet(f"{OUT_DIR}/house1_clean_1min.parquet")
@@ -168,6 +179,7 @@ def main():
     print("\nSaved:")
     print(f"  {OUT_DIR}/house1_clean_1min.parquet")
     print(f"  {OUT_DIR}/house1_outages.csv")
+    print(f"  {OUT_DIR}/house1_per_channel_missingness.csv")
     print(f"  {OUT_DIR}/house1_cleaning_summary.json")
     print(f"  {FIG_DIR}/house1_overview_before_after.png")
     print(f"  {FIG_DIR}/house1_day_before_after.png")
