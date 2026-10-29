@@ -18,7 +18,9 @@ src/
   inspect_house1.py         Part 1: raw-data inspection (grounds the cleaning thresholds below)
   clean_house1.py           Part 1: cleaning pipeline + before/after plots for House 1
   washing_machine_eda.py    Part 2: cycle detection + cross-house EDA (8 households)
-  disaggregation_model.py   Part 3: feature engineering, baselines, LightGBM model, 2 experiments
+  disaggregation_model.py   Part 3: feature engineering, baselines, LightGBM model, 3 experiments
+                            (household split, time split, and a per-household-normalized-feature
+                            iteration on the household split)
 notebooks/
   walkthrough.ipynb         thin notebook that runs the three stages above end-to-end and
                             displays the resulting figures/tables inline
@@ -64,7 +66,7 @@ curl -LO https://pureportal.strath.ac.uk/files/62090184/CLEAN_REFIT_081116.7z
 python src/inspect_house1.py          # prints the raw-data findings summarised in DATA.md
 python src/clean_house1.py            # Part 1: cleans House 1, writes figures/ + processed/
 python src/washing_machine_eda.py     # Part 2: cycle detection + EDA across 8 households
-python src/disaggregation_model.py    # Part 3: trains + evaluates the model (~25s on a laptop)
+python src/disaggregation_model.py    # Part 3: trains + evaluates the model (~30s on a laptop)
 ```
 
 Each script is self-contained and re-runnable (outputs are overwritten, not appended). Total
@@ -109,7 +111,10 @@ for a narrated read-through.
   directly motivated by the Experiment A vs B contrast in `RESULTS.md`.
 - A proper Seq2Point/CNN baseline trained across the full 20 REFIT households (more appliance
   diversity) to see whether cross-house transfer improves with more varied training data, isolating
-  whether the failure above is a data-diversity limit or a genuine architecture limit.
+  whether the failure above is a data-diversity limit or a genuine architecture limit. This is now
+  the most promising direction: per-household feature normalisation was tried and ruled out as a
+  fix (see `RESULTS.md`'s "Model iteration" section) — rescaling input units alone doesn't help,
+  pointing at an architecture limit rather than a scale-mismatch one.
 - Re-run Experiment A's evaluation under a class-balanced windowed protocol matching Murray et
   al. (2019) (see `RESULTS.md`), to isolate how much of our F1 gap vs. their published 0.79–0.86
   is architecture vs. evaluation-protocol difficulty.

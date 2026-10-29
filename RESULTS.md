@@ -88,6 +88,50 @@ houses (10, 19, 20)** — it never flags a single active minute correctly in any
 `figures/model_actual_vs_predicted_house10.png` makes this visible directly: real 2,000 W+ wash
 cycles are completely missed by a flat near-zero prediction line.
 
+### Model iteration: raw vs. per-household-normalized features
+
+**First attempt** (above): Experiment A's LightGBM model, trained on raw-Watts aggregate
+features, fails to beat the always-off baseline on fully unseen households (F1 = 0.000).
+
+**Hypothesis**: the aggregate-derived features (raw Watts, rolling mean/std/min/max, lags/diffs)
+implicitly encode each household's own baseline load scale. If training houses {1, 2, 5, 6} have
+systematically different typical aggregate levels than test houses {10, 19, 20}, the tree splits
+learned on train-house power thresholds may simply not apply at test houses with a different
+scale — a scale-transfer failure, distinct from (or compounding) the signature-shape-transfer
+failure discussed below.
+
+**Test**: re-ran the identical household split, LightGBM hyperparameters and `evaluate()`
+(`src/disaggregation_model.py:run_normalized_experiment`), with every aggregate-derived feature
+re-expressed as a multiple of that house's own reference load — `agg_norm = agg / house_ref`,
+where `house_ref` is the **median of that house's own, full Aggregate series**, computed
+independently per house (never a cross-house statistic, so there's no leakage between train and
+test households). The original raw-feature run was not re-executed; `model_results.csv` was read
+back in as-is for the comparison below.
+
+| Metric | Raw (Watts) | Normalized |
+|---|---|---|
+| MAE (W) | 16.15 | 16.15 |
+| RMSE (W) | 148.59 | 148.60 |
+| SAE | 0.999 | 0.999 |
+| On/off F1 | 0.000 | 0.000 |
+| Precision | 0.000 | 0.000 |
+| Recall | 0.000 | 0.000 |
+
+**Verdict: normalization did not fix the generalisation gap.** Every metric is unchanged to
+3 significant figures (F1 stays exactly 0.000 on every held-out test house; SAE is marginally
+*worse*, 0.9991 → 0.9994). `figures/model_actual_vs_predicted_house10_normalized.png` is visually
+indistinguishable from the raw-feature version — the model still collapses to a flat near-zero
+prediction. This rules out "baseline-scale mismatch" as the dominant cause of the cross-house
+failure: rescaling the input alone doesn't help, which is more consistent with the
+literature-grounded explanation below — the model has no architecture capable of recognising a
+washing-machine's activation *shape* regardless of units, so changing the units doesn't change
+what it's able to learn.
+
+**Next step if this still doesn't close the gap**: move from feature engineering to an
+architecture built to recognise activation shapes from windowed input (Seq2Point/CNN), trained on
+more and more-diverse households, rather than further rescaling a per-minute tabular
+representation.
+
 ### Experiment B — time-based split within known households (contrast case)
 
 To check this wasn't a broken pipeline, we ran a second experiment: each of the 8 houses' own

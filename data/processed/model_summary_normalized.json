@@ -1,0 +1,18 @@
+{
+  "train_houses": [
+    1,
+    2,
+    5,
+    6
+  ],
+  "val_house": 7,
+  "test_houses": [
+    10,
+    19,
+    20
+  ],
+  "n_train": 3006175,
+  "n_val": 770726,
+  "n_test": 2012705,
+  "best_iteration": 2
+}

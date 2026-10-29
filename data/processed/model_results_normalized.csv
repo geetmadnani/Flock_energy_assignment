@@ -1,0 +1,8 @@
+label,MAE_W,RMSE_W,SAE,on_off_F1,on_off_precision,on_off_recall,n_rows
+norm_baseline_always_off,16.14,148.6,1.0,0.0,0.0,0.0,2012705
+norm_baseline_hourly_profile,28.92,147.68,0.0936,0.1192,0.0655,0.6625,2012705
+norm_lightgbm_model,16.15,148.6,0.9994,0.0,0.0,0.0,2012705
+norm_lightgbm_model_active_only,301.0,642.22,0.9999,0.0,0.0,0.0,107752
+norm_lightgbm_house10,31.93,214.13,0.9995,0.0,0.0,0.0,755223
+norm_lightgbm_house19,5.66,57.74,0.9994,0.0,0.0,0.0,634189
+norm_lightgbm_house20,7.7,111.14,0.9993,0.0,0.0,0.0,623293
