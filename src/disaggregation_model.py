@@ -276,17 +276,19 @@ def main():
     print(imp.head(10).to_string(index=False))
 
     # ---- plot: actual vs predicted on a representative test-house day ----
-    test_df_sorted = test_df.sort_index()
+    # Boolean-mask on .values, not .loc with timestamp labels: test_df
+    # concatenates multiple test houses whose monitoring periods overlap in
+    # real calendar time, so its index has duplicate timestamp labels across
+    # houses. .loc with such labels would return rows from every house
+    # sharing that timestamp, not just h_plot's - boolean masking is
+    # position-based and safe regardless of duplicate labels.
     h_plot = TEST_HOUSES[0]
-    hmask = test_df_sorted["house"] == h_plot
-    sub_idx = test_df_sorted.index[hmask]
-    pred_full = pd.Series(np.nan, index=test_df.index)
-    pred_full.loc[:] = test_pred
-    pred_series = pred_full.loc[sub_idx].sort_index()
-    true_series = test_df.loc[sub_idx, "target"].sort_index()
+    hmask = test_df["house"].values == h_plot
+    true_series = test_df.loc[hmask, "target"].sort_index()
+    pred_series = pd.Series(test_pred[hmask], index=test_df.index[hmask]).sort_index()
 
     active_days = true_series[true_series > 200].index.normalize().unique()
-    day = active_days[len(active_days) // 2] if len(active_days) else sub_idx[1000].normalize()
+    day = active_days[len(active_days) // 2] if len(active_days) else true_series.index[1000].normalize()
     day_end = day + pd.Timedelta(days=1)
 
     fig, ax = plt.subplots(figsize=(13, 4.5))
