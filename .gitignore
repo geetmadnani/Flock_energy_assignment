@@ -1,0 +1,14 @@
+# Raw/cleaned REFIT source data (multi-GB; see DATA.md for download + extraction instructions)
+data/raw_extract/
+data/clean_extract/
+data/processed/house_1min/
+
+# Keep small derived artifacts (summaries, cycle tables, model results) - do not ignore data/processed/*.csv or *.json
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS
+.DS_Store

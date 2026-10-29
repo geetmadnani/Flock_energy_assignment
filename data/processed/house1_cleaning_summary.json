@@ -1,0 +1,38 @@
+{
+  "raw_rows": 4140886,
+  "raw_time_range": [
+    "2014-06-27 21:57:50",
+    "2015-07-10 11:56:32"
+  ],
+  "duplicate_timestamp_rows_removed": 0,
+  "aggregate_impossible_values_nulled": 74,
+  "appliance_impossible_values_nulled": {
+    "Appliance1": 184,
+    "Appliance2": 22,
+    "Appliance3": 80,
+    "Appliance4": 71,
+    "Appliance5": 65,
+    "Appliance6": 12,
+    "Appliance7": 371,
+    "Appliance8": 91,
+    "Appliance9": 15
+  },
+  "rows_sum_appliances_gt_aggregate": 115217,
+  "rows_sum_appliances_gt_aggregate_pct": 2.782,
+  "resampled_1min_bins_total": 543720,
+  "resampled_1min_bins_fully_missing_before_fill": 53769,
+  "remaining_outage_count": 75,
+  "remaining_outage_total_minutes": 53259,
+  "largest_outages_minutes": [
+    12453,
+    10819,
+    6511,
+    6274,
+    3307,
+    2999,
+    2260,
+    2163,
+    1813,
+    1448
+  ]
+}
